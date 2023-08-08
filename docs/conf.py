@@ -6,17 +6,17 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import datetime
 import re
 
 from geordpy import __version__  # noqa: E402
 
 project = "geordpy"
 
-# TODO: add copyright
-copyright = ""
+current_year = datetime.datetime.now().year
+copyright = f"Copyright © {current_year} Nis Meinert"
 
-# TODO: add author
-author = ""
+author = "Nis Meinert"
 
 # The short X.Y version
 parsed_version = re.match(r"(\d+\.\d+\.\d+)", __version__)

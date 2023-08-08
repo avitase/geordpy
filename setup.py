@@ -17,7 +17,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="geordpy",
-    description="",  # TODO: add a short description here
+    description="A Python library for simplifying geodetic-coordinate polylines using the Ramer-Douglas-Peucker algorithm",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/avitase/geordpy",
