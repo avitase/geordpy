@@ -11,7 +11,7 @@ GeoRDPy is a Python library that simplifies geodetic-coordinate polylines using 
 - Easy-to-use interface with a single function call.
 
 ## Installation
-`GeoRDPy` releases are available as wheel packages for macOS, Windows and Linux on [PyPI](https://pypi.org/project/geordpy/).
+GeoRDPy releases are available as wheel packages for macOS, Windows and Linux on [PyPI](https://pypi.org/project/geordpy/).
 Install it using pip:
 ```bash
 $ pip install geordpy
