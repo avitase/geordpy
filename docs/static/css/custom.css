@@ -1,0 +1,9 @@
+/* Hide navigation tab */
+div.sphinxsidebar {
+    display: none;
+}
+
+/* Expand content area */
+div.document {
+    width: 100%;
+}

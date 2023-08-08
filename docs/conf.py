@@ -51,3 +51,4 @@ exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "alabaster"
 html_static_path = ["static"]
+html_css_files = ["css/custom.css"]
