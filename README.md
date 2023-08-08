@@ -1,4 +1,4 @@
-# geordpy
+# GeoRDPy
 
 <!-- add description here -->
 
