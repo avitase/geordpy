@@ -1,7 +1,8 @@
-from geographiclib.geodesic import Geodesic
-import pytest
-from geordpy.geordpy import geodist_point_lineseg
 import numpy as np
+import pytest
+from geographiclib.geodesic import Geodesic
+
+from geordpy.geordpy import geodist_point_lineseg
 
 
 def test_geodist():

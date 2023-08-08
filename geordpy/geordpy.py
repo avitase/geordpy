@@ -1,6 +1,6 @@
 import numpy as np
-from geographiclib.geodesic import Geodesic
 import scipy.optimize
+from geographiclib.geodesic import Geodesic
 
 
 def geodist_point_lineseg(point, *, start, end, geod=None):
