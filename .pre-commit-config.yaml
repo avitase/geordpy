@@ -1,19 +1,19 @@
 repos:
   - repo: https://github.com/ambv/black
-    rev: 23.7.0  # TODO: update version
+    rev: 23.7.0
     hooks:
     - id: black
       language_version: python3
       exclude: (geordpy/_version|versioneer).py
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0  # TODO: update version
+    rev: 5.12.0
     hooks:
       - id: isort
         args: ["--profile", "black", "--filter-files"]
         exclude: (geordpy/_version|versioneer).py
 
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0  # TODO: update version
+    rev: 6.1.0
     hooks:
     - id: flake8
