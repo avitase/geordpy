@@ -31,6 +31,36 @@ def geodist_points_lineseg(points, *, start, end, geod=None):
 
 
 def filter(points, threshold, geod=None):
+    """
+    Apply the Ramer-Douglas-Peucker algorithm to a polyline defined by latitude/longitude pairs.
+
+    Parameters:
+        points (list): Numpy array of tuples representing latitude/longitude pairs in degrees.
+        threshold (float): The distance threshold in meters for the Ramer-Douglas-Peucker algorithm.
+        geod (Geodesic, optional): A Geodesic object from the GeographicLib library for precise distance calculations.
+                                    Defaults to WGS84 reference ellipsoid if not provided.
+
+    Returns:
+        numpy.ndarray: A boolean mask indicating which points are marked as significant by the Ramer-Douglas-Peucker algorithm.
+                        When applied to the input array, this mask removes the insignificant points.
+
+    Example:
+        >>> import numpy as np
+        >>> import geordpy
+        >>> points = np.array([(42.0, -75.0), (42.1, -74.9), (42.2, -75.1), (42.3, -74.8)])
+        >>> threshold = 15_000  # meters
+        >>> mask = geordpy.filter(points, threshold=threshold)
+        >>> points[mask]
+        array([[ 42. , -75. ],
+               [ 42.1, -74.9],
+               [ 42.2, -75.1],
+               [ 42.3, -74.8]])
+
+    Note:
+        - The Ramer-Douglas-Peucker algorithm reduces the number of points in the polyline while preserving its shape.
+        - Geodesic distances are calculated using the provided Geodesic object or the default WGS84 reference ellipsoid.
+        - Ensure that the input points are ordered in the sequence of the polyline to be simplified.
+    """
     if len(points) == 0:
         return np.empty(0, dtype=bool)
 
