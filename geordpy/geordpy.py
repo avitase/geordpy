@@ -17,7 +17,8 @@ def geodist_point_lineseg(point, *, start, end, geod=None):
 
     res = scipy.optimize.minimize_scalar(_dist, bounds=(arc_min, arc_max))
     assert res.success
-    return res.fun
+
+    return min([res.fun, _dist(0), _dist(arc_max)])
 
 
 def geodist_points_lineseg(points, *, start, end, geod=None):

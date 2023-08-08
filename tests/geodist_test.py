@@ -11,6 +11,12 @@ def test_geodist():
     end = 54.55, 11.93
     point = 54.49, 12.09
 
+    min_dist = geodist_point_lineseg(start, start=start, end=end)
+    assert min_dist == pytest.approx(0.0, abs=1e-9)
+
+    min_dist = geodist_point_lineseg(end, start=start, end=end)
+    assert min_dist == pytest.approx(0.0, abs=1e-9)
+
     min_dist = geodist_point_lineseg(point, start=start, end=end)
 
     geod = Geodesic.WGS84
