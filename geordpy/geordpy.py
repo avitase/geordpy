@@ -42,8 +42,8 @@ def filter(points, threshold, geod=None):
     dist = geodist_points_lineseg(
         points[1:-1], start=points[0], end=points[-1], geod=geod
     )
-    i_max = np.argmax(dist)
-    dist_max = dist[i_max]
+    i_max = np.argmax(dist) + 1  # dist[i] = dist(points[i+1], line seg.)
+    dist_max = dist[i_max - 1]
 
     return (
         np.concatenate(
