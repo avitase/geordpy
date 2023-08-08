@@ -42,7 +42,7 @@ def filter(points, threshold, geod=None):
 
     Returns:
         numpy.ndarray: A boolean mask indicating which points are marked as significant by the Ramer-Douglas-Peucker algorithm.
-                        When applied to the input array, this mask removes the insignificant points.
+        When applied to the input array, this mask removes the insignificant points.
 
     Example:
         >>> import numpy as np
