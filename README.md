@@ -23,10 +23,9 @@ $ pip install geordpy
 >>> import geordpy
 >>> points = np.array([(42.0, -75.0), (42.1, -74.9), (42.2, -75.1), (42.3, -74.8)])
 >>> threshold = 15_000  # meters
->>> mask = geordpy.filter(points, threshold=threshold)
+>>> mask = geordpy.filter(points, threshold)
 >>> points[mask]
 array([[ 42. , -75. ],
-       [ 42.1, -74.9],
        [ 42.2, -75.1],
        [ 42.3, -74.8]])
 ```
