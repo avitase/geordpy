@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import os
+import pathlib
 import sys
 
 from setuptools import find_packages, setup
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = pathlib.Path(__file__).parent.resolve()
 sys.path.append(here)
 
 import versioneer  # noqa: E402
 
-with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
+with open(here / "README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 
