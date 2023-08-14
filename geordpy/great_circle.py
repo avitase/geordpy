@@ -1,55 +1,47 @@
 import numpy as np
-from scipy.spatial.transform import Rotation
 
 
-def constrain_angle(x):
-    x = np.fmod(x + np.pi, 2.0 * np.pi)
-    if x < 0:
-        x += 2.0 * np.pi
-
-    return x - np.pi
+def to_vec(*, lat, lon):
+    lat = np.deg2rad(lat)
+    lon = np.deg2rad(lon)
+    return np.array([np.cos(lat) * np.cos(lon), np.cos(lat) * np.sin(lon), np.sin(lat)])
 
 
-def sin_bearing(*, lat1, lon1, lat2, lon2):
-    slat1 = np.sin(lat1)
-    slat2 = np.sin(lat2)
+def northernmost(*, lat1, lon1, lat2, lon2):
+    lat1 = np.deg2rad(lat1)
+    lat2 = np.deg2rad(lat2)
+    lon1 = np.deg2rad(lon1)
+    lon2 = np.deg2rad(lon2)
+
     clat1 = np.cos(lat1)
     clat2 = np.cos(lat2)
+    slat1 = np.sin(lat1)
+    slat2 = np.sin(lat2)
 
-    cdlon = np.cos(lon1 - lon2)
+    cdlon = np.cos(lon2 - lon1)
+    sdlon = np.sin(lon2 - lon1)
 
-    nom = clat1 * slat2 - cdlon * clat2 * slat1
-    denom = np.sqrt(1.0 - (cdlon * clat1 * clat2 + slat1 * slat2) ** 2)
-    x = nom / denom
+    nom = clat2 * sdlon
+    denom = clat1 * slat2 - slat1 * clat2 * cdlon
+    az1 = np.arctan2(nom, denom)
 
-    # sin(arccos x) = sqrt(1 - x^2)
-    return np.sqrt(1.0 - min(x**2, 1.0))
-
-
-def lon_north(*, lat, lon, sin_bearing):
-    nom = np.tan(lat)
-
-    # tan(arccos x) = sqrt(1 - x^2) / x
-    denom = np.sqrt(1.0 - sin_bearing**2) / sin_bearing
-
-    return constrain_angle(lon + np.arccos(nom / denom))
+    latN = np.arccos(np.sin(np.abs(az1)) * clat1)
+    lonN = lon1 + np.sign(az1) * np.arccos(np.tan(lat1) / np.tan(latN))
+    return np.rad2deg(latN), np.rad2deg(lonN)
 
 
-def closest_point_great_circle(*, lat, lon, lat1, lon1, lat2, lon2):
-    sin_az1 = sin_bearing(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
-    if sin_az1 < np.nextafter(0.0, 1.0):
-        return np.array([np.cos(lon), np.sin(lon), 0.0])
+def closest_point(lat, lon, *, lat1, lon1, lat2, lon2):
+    a = to_vec(lat=lat1, lon=lon1)
+    b = to_vec(lat=lat2, lon=lon2)
+    p = to_vec(lat=lat, lon=lon)
 
-    lon0 = lon_north(lat=lat1, lon=lon1, sin_bearing=sin_az1) + np.pi / 2.0
-    rot_axis = np.array([np.cos(lon0), np.sin(lon0), 0.0])
-    rot_angle = np.arcsin(sin_az1)
+    n = np.cross(a, b)
+    s = np.dot(n, p)
+    if abs(np.sum(s**2) - 1.0) < np.nextafter(0.0, 1.0):
+        return lat1, lon1
 
-    rot = Rotation.from_rotvec(rot_angle * rot_axis)
-    p = rot.as_matrix() @ np.array(
-        [np.cos(lat) * np.cos(lon), np.cos(lat) * np.sin(lon), np.sin(lat)]
-    )
+    q = p - s * n
+    lat = np.arctan2(q[2], np.hypot(q[0], q[1]))
+    lon = np.arctan2(q[1], q[0])
 
-    lon3 = np.arctan2(p[1], p[0])
-    q = np.array([np.cos(lon3), np.sin(lon3), 0.0])
-
-    return rot.inv().as_matrix() @ q
+    return np.rad2deg(lat), np.rad2deg(lon)
