@@ -16,6 +16,18 @@ def batched_dot(a, b, *, squeeze=True):
     return res.squeeze(-1) if squeeze else res
 
 
+def cos_distance(*, lat1, lat2, dlon):
+    cos_lat1 = np.cos(lat1)
+    sin_lat1 = np.sin(lat1)
+
+    cos_lat2 = np.cos(lat2)
+    sin_lat2 = np.sin(lat2)
+
+    cos_dlon = np.cos(dlon)
+
+    return sin_lat1 * sin_lat2 + cos_lat1 * cos_lat2 * cos_dlon
+
+
 def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2):
     x, a, b = to_vec(
         lat=np.stack([lat, lat1, lat2], axis=0), lon=np.stack([lon, lon1, lon2], axis=0)

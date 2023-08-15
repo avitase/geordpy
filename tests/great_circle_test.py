@@ -5,7 +5,7 @@ import pytest
 import scipy.optimize
 from scipy.spatial.transform import Rotation as rotation
 
-from geordpy.great_circle import cos_distance_segment
+from geordpy.great_circle import cos_distance, cos_distance_segment
 
 SQRT2 = np.sqrt(2.0)
 SQRT3 = np.sqrt(3.0)
@@ -109,8 +109,7 @@ def test_random_points(batch_size, seed):
         lat1 = great_circle(x, latN=latN[batch_idx], lonN=lonN[batch_idx])
         lat2 = lat[batch_idx]
         dlon = x - lon[batch_idx]
-
-        return -np.sin(lat1) * np.sin(lat2) - np.cos(lat1) * np.cos(lat2) * np.cos(dlon)
+        return -cos_distance(lat1=lat1, lat2=lat2, dlon=dlon)
 
     for i in range(batch_size):
         bound = get_bound(lon1[i], lon2[i])
