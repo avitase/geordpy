@@ -1,3 +1,5 @@
+import functools
+
 import numpy as np
 import pytest
 import scipy.optimize
@@ -10,7 +12,7 @@ SQRT3 = np.sqrt(3.0)
 
 
 def latlon_from_vec(v):
-    return np.arcsin(v[2]), np.arctan2(v[1], v[0])
+    return np.arcsin(v[..., 2]), np.arctan2(v[..., 1], v[..., 0])
 
 
 @pytest.mark.parametrize(
@@ -51,8 +53,13 @@ def test_points(points, rotate):
     lat2, lon2 = latlon_from_vec(rot @ b)
     lat3, lon3 = latlon_from_vec(rot @ c)
     cos_dist = cos_distance_segment(
-        lat3, lon3, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
-    )
+        np.array([lat3]),
+        np.array([lon3]),
+        lat1=np.array([lat1]),
+        lon1=np.array([lon1]),
+        lat2=np.array([lat2]),
+        lon2=np.array([lon2]),
+    ).squeeze(-1)
 
     assert cos_dist == pytest.approx(exp)
 
@@ -66,46 +73,55 @@ def get_bound(a, b):
         a, b = b, a
 
     d = b - a
-    if d > (w := a + 2.0 * np.pi):
-        return b, w
+    if d > np.pi:
+        return b, a + 2.0 * np.pi
 
     return a, b
 
 
-@pytest.mark.parametrize("seed", list(range(1, 10)))
-def test_random_points(seed):
+@pytest.mark.parametrize("batch_size", [5])
+@pytest.mark.parametrize("seed", list(range(1, 101)))
+def test_random_points(batch_size, seed):
     rng = np.random.default_rng(seed)
 
-    az0 = rng.uniform(-np.pi, np.pi)
-    latN = np.pi / 2 - abs(az0)
-    lonN = rng.uniform(-np.pi, np.pi)
+    az0 = rng.uniform(-np.pi, np.pi, size=batch_size)
+    latN = np.pi / 2 - np.abs(az0)
+    lonN = rng.uniform(-np.pi, np.pi, size=batch_size)
 
-    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=2)
+    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=(2, batch_size))
     lat1 = great_circle(lon1, latN=latN, lonN=lonN)
     lat2 = great_circle(lon2, latN=latN, lonN=lonN)
 
-    p = rotation.random(random_state=seed).as_matrix() @ np.array([1.0, 0.0, 0.0])
+    p = np.stack(
+        [
+            R.as_matrix() @ np.array([1.0, 0.0, 0.0])
+            for R in rotation.random(random_state=seed, num=batch_size)
+        ],
+        axis=0,
+    )
     lat, lon = latlon_from_vec(p)
 
     cos_dist = cos_distance_segment(
         lat, lon, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
     )
 
-    def loss(x):
-        lat1 = great_circle(x, latN=latN, lonN=lonN)
-        lat2 = lat
-
-        dlon = x - lon
+    def loss(x, *, batch_idx):
+        lat1 = great_circle(x, latN=latN[batch_idx], lonN=lonN[batch_idx])
+        lat2 = lat[batch_idx]
+        dlon = x - lon[batch_idx]
 
         return -np.sin(lat1) * np.sin(lat2) - np.cos(lat1) * np.cos(lat2) * np.cos(dlon)
 
-    bound = get_bound(lon1, lon2)
-    res = scipy.optimize.minimize_scalar(loss, bounds=bound)
-    assert res.success
+    for i in range(batch_size):
+        bound = get_bound(lon1[i], lon2[i])
+        res = scipy.optimize.minimize_scalar(
+            functools.partial(loss, batch_idx=i), bounds=bound
+        )
+        assert res.success
 
-    if loss(lon1) < res.fun:
-        res.fun = loss(lon1)
-    elif loss(lon2) < res.fun:
-        res.fun = loss(lon2)
+        if (fun := loss(lon1[i], batch_idx=i)) < res.fun:
+            res.fun = fun
+        elif (fun := loss(lon2[i], batch_idx=i)) < res.fun:
+            res.fun = fun
 
-    assert cos_dist > -res.fun or cos_dist == pytest.approx(-res.fun)
+        assert cos_dist[i] > -res.fun or cos_dist[i] == pytest.approx(-res.fun), f"{i=}"
