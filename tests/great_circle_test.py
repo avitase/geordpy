@@ -3,31 +3,42 @@ import pytest
 import scipy.optimize
 from scipy.spatial.transform import Rotation as rotation
 
-from geordpy.great_circle import closest_point, northernmost
+from geordpy.great_circle import cos_distance_segment
 
 SQRT2 = np.sqrt(2.0)
+SQRT3 = np.sqrt(3.0)
 
 
 def latlon_from_vec(v):
-    return np.rad2deg(np.arcsin(v[2])), np.rad2deg(np.arctan2(v[1], v[0]))
+    return np.arcsin(v[2]), np.arctan2(v[1], v[0])
 
 
 @pytest.mark.parametrize(
     "points",
     [
-        # on great-circle
         (
             (1.0, 0.0, 0.0),
             (0.0, 1.0, 0.0),
             (-1.0, 0.0, 0.0),
-            (-1.0, 0.0, 0.0),
+            0.0,
         ),
-        # 45 degrees distance
         (
             (1.0, 0.0, 0.0),
             (0.0, 1.0, 0.0),
             (0.5, 0.5, 1.0 / SQRT2),
-            (1.0 / SQRT2, 1.0 / SQRT2, 0.0),
+            1 / SQRT2,
+        ),
+        (
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (-0.25, -SQRT3 / 4.0, -SQRT3 / 2.0),
+            -0.25,
+        ),
+        (
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, -1.0),
+            0.0,
         ),
     ],
 )
@@ -39,61 +50,62 @@ def test_points(points, rotate):
     lat1, lon1 = latlon_from_vec(rot @ a)
     lat2, lon2 = latlon_from_vec(rot @ b)
     lat3, lon3 = latlon_from_vec(rot @ c)
-    lat4, lon4 = closest_point(lat3, lon3, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    cos_dist = cos_distance_segment(
+        lat3, lon3, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+    )
 
-    lat_exp, lon_exp = latlon_from_vec(rot @ exp)
-
-    assert lat4 == pytest.approx(lat_exp)
-    assert lon4 == pytest.approx(lon_exp)
+    assert cos_dist == pytest.approx(exp)
 
 
-@pytest.mark.parametrize("flip", [True, False])
-def test_northernmost_calculation(flip):
-    lat1, lon1 = 60.0, 45.0
-    lat2, lon2 = 45.0, 135.0
+def great_circle(lon, *, latN, lonN):
+    return np.arctan(np.tan(latN) * np.cos(lon - lonN))
 
-    if flip:
-        lat1, lat2 = lat2, lat1
-        lon1, lon2 = lon2, lon1
 
-    lat_exp, lon_exp = np.rad2deg(np.arccos(1.0 / np.sqrt(5.0))), 75.0
+def get_bound(a, b):
+    if b < a:
+        a, b = b, a
 
-    latN, lonN = northernmost(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
-    assert latN == pytest.approx(lat_exp)
-    assert lonN == pytest.approx(lon_exp)
+    d = b - a
+    if d > (w := a + 2.0 * np.pi):
+        return b, w
+
+    return a, b
 
 
 @pytest.mark.parametrize("seed", list(range(1, 10)))
 def test_random_points(seed):
-    def _init_vec(R, *, lon):
-        lon = np.deg2rad(lon)
-        return R @ np.array([np.cos(lon), np.sin(lon), 0.0])
-
     rng = np.random.default_rng(seed)
-    rot1, rot2 = [rot.as_matrix() for rot in rotation.random(num=2, random_state=seed)]
 
-    a = _init_vec(rot1, lon=0.0)
-    b = _init_vec(rot1, lon=rng.uniform(0.0, 360.0))
-    c = _init_vec(rot2, lon=0.0)
+    az0 = rng.uniform(-np.pi, np.pi)
+    latN = np.pi / 2 - abs(az0)
+    lonN = rng.uniform(-np.pi, np.pi)
 
-    lat1, lon1 = latlon_from_vec(a)
-    lat2, lon2 = latlon_from_vec(b)
-    lat3, lon3 = latlon_from_vec(c)
-    lat4, lon4 = closest_point(lat3, lon3, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
+    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=2)
+    lat1 = great_circle(lon1, latN=latN, lonN=lonN)
+    lat2 = great_circle(lon2, latN=latN, lonN=lonN)
 
-    latN12, lonN12 = northernmost(lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2)
-    latN14, lonN14 = northernmost(lat1=lat1, lon1=lon1, lat2=lat4, lon2=lon4)
-    assert latN14 == pytest.approx(latN12)
-    assert lonN14 == pytest.approx(lonN12)
+    p = rotation.random(random_state=seed).as_matrix() @ np.array([1.0, 0.0, 0.0])
+    lat, lon = latlon_from_vec(p)
 
-    def _dist(s):
-        v = _init_vec(rot1, lon=s)
-        return np.dot(v, c)
+    cos_dist = cos_distance_segment(
+        lat, lon, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
+    )
 
-    res = scipy.optimize.minimize_scalar(_dist, bounds=(0.0, 360.0))
+    def loss(x):
+        lat1 = great_circle(x, latN=latN, lonN=lonN)
+        lat2 = lat
+
+        dlon = x - lon
+
+        return -np.sin(lat1) * np.sin(lat2) - np.cos(lat1) * np.cos(lat2) * np.cos(dlon)
+
+    bound = get_bound(lon1, lon2)
+    res = scipy.optimize.minimize_scalar(loss, bounds=bound)
     assert res.success
 
-    v = np.array(
-        [np.cos(lat4) * np.cos(lon4), np.cos(lat4) * np.sin(lon4), np.sin(lat4)]
-    )
-    assert np.dot(v, c) <= res.fun
+    if loss(lon1) < res.fun:
+        res.fun = loss(lon1)
+    elif loss(lon2) < res.fun:
+        res.fun = loss(lon2)
+
+    assert cos_dist > -res.fun or cos_dist == pytest.approx(-res.fun)
