@@ -21,6 +21,6 @@ geordpy module
 --------------
 
 .. automodule:: geordpy
-   :members: filter
+   :members: rdp_filter
    :undoc-members:
    :show-inheritance:
