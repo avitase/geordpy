@@ -19,18 +19,14 @@ def _filter(points, threshold):
     i_max = np.argmax(dist) + 1  # dist[i] = dist(points[i+1], line seg.)
     dist_max = dist[i_max - 1]
 
-    return (
-        np.concatenate(
-            [
-                _filter(points[: i_max + 1], threshold)[:-1],
-                _filter(points[i_max:], threshold),
-            ]
-        )
-        if dist_max > threshold
-        else np.array(
-            [True] + [False] * (n_points - 2) + [True],
-        )
-    )
+    mask = np.full(n_points, True)
+    if dist_max > threshold:
+        mask[: i_max + 1] = _filter(points[: i_max + 1], threshold)
+        mask[i_max:] = _filter(points[i_max:], threshold)
+    else:
+        mask[1:-1] = False
+
+    return mask
 
 
 def rdp_filter(points, threshold, radius=6_371_000):
