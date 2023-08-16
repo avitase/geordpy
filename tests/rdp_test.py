@@ -41,8 +41,14 @@ def test_filter():
     d3_07 = _dist(points[3], start=points[0], end=points[7])
     d2_03 = _dist(points[2], start=points[0], end=points[3])
 
+    mask = rdp_filter([], threshold=0, radius=radius)
+    assert len(mask) == 0
+
+    mask = rdp_filter(points[:2], threshold=np.finfo(np.float64).max, radius=radius)
+    assert len(mask) == 2 and all(mask)
+
     mask = rdp_filter(points, threshold=0, radius=radius)
-    assert all(mask)
+    assert len(mask) == len(points) and all(mask)
 
     threshold = np.ceil(d3_07)
     mask = rdp_filter(points, threshold=threshold, radius=radius)
