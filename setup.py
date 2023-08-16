@@ -28,9 +28,7 @@ setup(
     packages=find_packages(exclude=["docs", "tests"]),
     python_requires=">=3.10",
     install_requires=[
-        "geographiclib",
         "numpy",
-        "scipy",
     ],
     extras_require={
         "dev": [
@@ -38,6 +36,7 @@ setup(
             "pytest",
             "pytest-cov",
             "sphinx",
+            "scipy",
         ],
     },
 )
