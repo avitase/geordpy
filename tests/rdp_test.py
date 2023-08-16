@@ -24,20 +24,18 @@ def dist(point, *, start, end, radius):
 
 
 def test_filter():
-    points = np.deg2rad(
-        [
-            (0.0, 0.0),  # point 0
-            (-10.0, 10.0),  # point 1
-            (10.0, 20.0),  # point 2
-            (-20.0, 30.0),  # point 3
-            (20.0, 40.0),  # point 4
-            (-10.0, 50.0),  # point 5
-            (10.0, 60.0),  # point 6
-            (0.0, 70.0),  # point 7
-        ]
-    )
+    points = [
+        (0.0, 0.0),  # point 0
+        (-10.0, 10.0),  # point 1
+        (10.0, 20.0),  # point 2
+        (-20.0, 30.0),  # point 3
+        (20.0, 40.0),  # point 4
+        (-10.0, 50.0),  # point 5
+        (10.0, 60.0),  # point 6
+        (0.0, 70.0),  # point 7
+    ]
 
-    radius = 10_000
+    radius = 1000
     _dist = functools.partial(dist, radius=radius)
 
     d3_07 = _dist(points[3], start=points[0], end=points[7])
