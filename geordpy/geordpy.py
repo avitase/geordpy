@@ -8,23 +8,30 @@ def _filter(points, threshold):
     if n_points <= 2:
         return np.full(n_points, True)
 
-    dist = -great_circle.cos_distance_segment(
-        points[1:-1, 0],
-        points[1:-1, 1],
-        lat1=points[0, 0],
-        lon1=points[0, 1],
-        lat2=points[-1, 0],
-        lon2=points[-1, 1],
-    )
-    i_max = np.argmax(dist) + 1  # dist[i] = dist(points[i+1], line seg.)
-    dist_max = dist[i_max - 1]
-
     mask = np.full(n_points, True)
-    if dist_max > threshold:
-        mask[: i_max + 1] = _filter(points[: i_max + 1], threshold)
-        mask[i_max:] = _filter(points[i_max:], threshold)
-    else:
-        mask[1:-1] = False
+    stack = [(0, n_points - 1)]
+
+    while stack:
+        first, last = stack.pop()
+        if last - first < 2:
+            continue
+
+        dist = -great_circle.cos_distance_segment(
+            points[first + 1 : last, 0],
+            points[first + 1 : last, 1],
+            lat1=points[first, 0],
+            lon1=points[first, 1],
+            lat2=points[last, 0],
+            lon2=points[last, 1],
+        )
+        i_max = np.argmax(dist) + 1  # dist[i] = dist(points[i+1], line seg.)
+        dist_max = dist[i_max - 1]
+
+        if dist_max < threshold:
+            mask[first + 1 : last] = False
+        else:
+            stack.append((first, first + i_max))
+            stack.append((first + i_max, last))
 
     return mask
 
