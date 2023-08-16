@@ -12,15 +12,16 @@ Install it using pip:
 $ pip install geordpy
 ```
 
-## Usage
+## Example Usage
+The GeoRDPy API is designed with simplicity in mind, featuring a single method called `geordpy.rdp_filter`:
 ```python
->>> import numpy as np
 >>> import geordpy
->>> points = np.array([...])
+>>> points = [(latitude1, longitude1), (latitude2, longitude2), ...]
 >>> threshold = 15_000  # meters
 >>> mask = geordpy.rdp_filter(points, threshold)
->>> points = points[mask]  # filter points with mask
+>>> trajectory = np.array(points)[mask]
 ```
+For a quick illustration of how to utilize this method, refer to the [example here](geordpy/example.py).
 
 For more details, check the [documentation](https://avitase.github.io/geordpy/).
 
