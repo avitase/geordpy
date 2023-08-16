@@ -100,7 +100,7 @@ def test_random_points(batch_size, seed):
         lat, lon, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
     )
 
-    def loss(x, *, batch_idx):
+    def _loss(x, *, batch_idx):
         lat1 = great_circle(x, latN=latN, lonN=lonN)
         lat2 = lat[batch_idx]
         dlon = x - lon[batch_idx]
@@ -109,13 +109,13 @@ def test_random_points(batch_size, seed):
     bound = get_bound(lon1, lon2)
     for i in range(batch_size):
         res = scipy.optimize.minimize_scalar(
-            functools.partial(loss, batch_idx=i), bounds=bound
+            functools.partial(_loss, batch_idx=i), bounds=bound
         )
         assert res.success
 
-        if (fun := loss(lon1, batch_idx=i)) < res.fun:
+        if (fun := _loss(lon1, batch_idx=i)) < res.fun:
             res.fun = fun
-        elif (fun := loss(lon2, batch_idx=i)) < res.fun:
+        elif (fun := _loss(lon2, batch_idx=i)) < res.fun:
             res.fun = fun
 
         assert cos_dist[i] > -res.fun or cos_dist[i] == pytest.approx(-res.fun), f"{i=}"
