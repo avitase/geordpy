@@ -53,12 +53,7 @@ def test_points(points, rotate):
     lat2, lon2 = latlon_from_vec(rot @ b)
     lat3, lon3 = latlon_from_vec(rot @ c)
     cos_dist = cos_distance_segment(
-        np.array([lat3]),
-        np.array([lon3]),
-        lat1=np.array([lat1]),
-        lon1=np.array([lon1]),
-        lat2=np.array([lat2]),
-        lon2=np.array([lon2]),
+        np.array([lat3]), np.array([lon3]), lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
     ).squeeze(-1)
 
     assert cos_dist == pytest.approx(exp)
@@ -84,11 +79,11 @@ def get_bound(a, b):
 def test_random_points(batch_size, seed):
     rng = np.random.default_rng(seed)
 
-    az0 = rng.uniform(-np.pi, np.pi, size=batch_size)
+    az0 = rng.uniform(-np.pi, np.pi)
     latN = np.pi / 2 - np.abs(az0)
-    lonN = rng.uniform(-np.pi, np.pi, size=batch_size)
+    lonN = rng.uniform(-np.pi, np.pi)
 
-    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=(2, batch_size))
+    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=2)
     lat1 = great_circle(lon1, latN=latN, lonN=lonN)
     lat2 = great_circle(lon2, latN=latN, lonN=lonN)
 
@@ -106,21 +101,21 @@ def test_random_points(batch_size, seed):
     )
 
     def loss(x, *, batch_idx):
-        lat1 = great_circle(x, latN=latN[batch_idx], lonN=lonN[batch_idx])
+        lat1 = great_circle(x, latN=latN, lonN=lonN)
         lat2 = lat[batch_idx]
         dlon = x - lon[batch_idx]
         return -cos_distance(lat1=lat1, lat2=lat2, dlon=dlon)
 
+    bound = get_bound(lon1, lon2)
     for i in range(batch_size):
-        bound = get_bound(lon1[i], lon2[i])
         res = scipy.optimize.minimize_scalar(
             functools.partial(loss, batch_idx=i), bounds=bound
         )
         assert res.success
 
-        if (fun := loss(lon1[i], batch_idx=i)) < res.fun:
+        if (fun := loss(lon1, batch_idx=i)) < res.fun:
             res.fun = fun
-        elif (fun := loss(lon2[i], batch_idx=i)) < res.fun:
+        elif (fun := loss(lon2, batch_idx=i)) < res.fun:
             res.fun = fun
 
         assert cos_dist[i] > -res.fun or cos_dist[i] == pytest.approx(-res.fun), f"{i=}"

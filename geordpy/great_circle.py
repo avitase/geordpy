@@ -9,11 +9,10 @@ def to_vec(*, lat, lon):
     return np.stack([cos_lat * cos_lon, cos_lat * sin_lon, sin_lat], axis=-1)
 
 
-def batched_dot(a, b, *, squeeze=True):
+def batched_dot(a, b):
     a = np.expand_dims(a, 1)
     b = np.expand_dims(b, 2)
-    res = np.matmul(a, b).squeeze(-1)
-    return res.squeeze(-1) if squeeze else res
+    return np.matmul(a, b).squeeze(-1).squeeze(-1)
 
 
 def cos_distance(*, lat1, lat2, dlon):
@@ -29,33 +28,34 @@ def cos_distance(*, lat1, lat2, dlon):
 
 
 def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2):
-    x, a, b = to_vec(
-        lat=np.stack([lat, lat1, lat2], axis=0), lon=np.stack([lon, lon1, lon2], axis=0)
+    x = to_vec(lat=lat, lon=lon)
+    a, b = to_vec(
+        lat=np.stack([lat1, lat2], axis=0), lon=np.stack([lon1, lon2], axis=0)
     )
 
     n = np.cross(a, b)
-    d = batched_dot(a, b, squeeze=False)
+    d = np.dot(a, b)
     n /= np.sqrt((1.0 - d) * (1.0 + d))
 
-    s = batched_dot(n, x, squeeze=False)
+    s = x @ n
 
     eps = 1e-5
-    sel = (np.abs(s) < 1.0 - np.pi**2 / 8.0 * eps**2).squeeze()  # rel. error < eps
-    s = s[sel]
+    sel = np.abs(s) < 1.0 - np.pi**2 / 8.0 * eps**2  # rel. error < eps
+    s = np.expand_dims(s[sel], -1)
 
-    c = np.copy(b)
-    c[sel] = (x[sel] - s * n[sel]) / np.sqrt((1.0 - s) * (1.0 + s))
+    c = np.ones_like(x) * b
+    c[sel] = (x[sel] - np.outer(s, n)) / np.sqrt((1.0 - s) * (1.0 + s))
 
-    cos_alpha = batched_dot(b, c)
-    cos_beta = batched_dot(a, c)
-    cos_gamma = batched_dot(a, b)
+    cos_alpha = c @ b
+    cos_beta = c @ a
+    cos_gamma = np.dot(a, b)
 
-    closest_point = b
+    closest_point = np.ones_like(x) * b
 
     sel = cos_gamma < np.min((cos_alpha, cos_beta), axis=0)  # gamma < max(alpha, beta)
     closest_point[sel] = c[sel]
 
     sel = ~sel & (cos_beta >= cos_alpha)  # beta <= alpha
-    closest_point[sel] = a[sel]
+    closest_point[sel] = a
 
     return batched_dot(x, closest_point)
