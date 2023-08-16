@@ -74,7 +74,7 @@ def get_bound(a, b):
     return a, b
 
 
-@pytest.mark.parametrize("batch_size", [5])
+@pytest.mark.parametrize("batch_size", [1, 5, 10])
 @pytest.mark.parametrize("seed", list(range(1, 101)))
 def test_random_points(batch_size, seed):
     rng = np.random.default_rng(seed)
