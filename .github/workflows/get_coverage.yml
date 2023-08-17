@@ -38,7 +38,12 @@ jobs:
             --cov=geordpy \
           | tee pytest-coverage.txt
 
-      - name: Coverage
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Add Coverage to pull request
         uses: MishaKav/pytest-coverage-comment@v1.1.48
         if: github.event_name == 'pull_request'
         with:
