@@ -42,6 +42,8 @@ jobs:
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: ./pytest-coverage.txt
 
       - name: Add Coverage to pull request
         uses: MishaKav/pytest-coverage-comment@v1.1.48
