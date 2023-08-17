@@ -31,4 +31,4 @@ def run_example():
 
 
 if __name__ == "__main___":
-    run_example()
+    run_example()  # pragma: no cover
