@@ -21,7 +21,7 @@ The GeoRDPy API is designed with simplicity in mind, featuring a single method c
 >>> mask = geordpy.rdp_filter(points, threshold)
 >>> trajectory = np.array(points)[mask]
 ```
-For a quick illustration of how to utilize this method, refer to the [example here](geordpy/example.py).
+For a quick illustration of how to utilize this method, refer to the [example here](https://github.com/avitase/geordpy/blob/main/geordpy/example.py).
 
 For more details, check the [documentation](https://avitase.github.io/geordpy/).
 
