@@ -23,7 +23,7 @@ def dist(point, *, start, end, radius):
     )
 
 
-def test_filter():
+def test_trajectory():
     points = [
         (0.0, 0.0),  # point 0
         (-10.0, 10.0),  # point 1
@@ -61,3 +61,17 @@ def test_filter():
     threshold = np.floor(d2_03)
     mask = rdp_filter(points, threshold=threshold, radius=radius)
     assert all(mask == [True, False, True, True, True, True, False, True])
+
+
+def test_degenerated_trajectory():
+    points = [
+        (0.0, 0.0),
+        (0.0, 0.0),
+        (0.0, 0.0),
+        (0.0, 0.0),
+        (0.0, 0.0),
+        (0.0, 0.0),
+    ]
+
+    mask = rdp_filter(points, threshold=10)
+    assert all(mask == [True, False, False, False, False, True])

@@ -27,19 +27,18 @@ def cos_distance(*, lat1, lat2, dlon):
     return sin_lat1 * sin_lat2 + cos_lat1 * cos_lat2 * cos_dlon
 
 
-def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2):
+def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2, eps=1e-5):
     x = to_vec(lat=lat, lon=lon)
     a, b = to_vec(
         lat=np.stack([lat1, lat2], axis=0), lon=np.stack([lon1, lon2], axis=0)
     )
 
     n = np.cross(a, b)
-    d = np.dot(a, b)
-    n /= np.sqrt((1.0 - d) * (1.0 + d))
+    cos_gamma = np.dot(a, b)
+    n /= max(np.sqrt((1.0 - cos_gamma) * (1.0 + cos_gamma)), np.nextafter(0.0, 1.0))
 
     s = x @ n
 
-    eps = 1e-5
     sel = np.abs(s) < 1.0 - np.pi**2 / 8.0 * eps**2  # rel. error < eps
     s = np.expand_dims(s[sel], -1)
 
@@ -48,7 +47,6 @@ def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2):
 
     cos_alpha = c @ b
     cos_beta = c @ a
-    cos_gamma = np.dot(a, b)
 
     closest_point = np.ones_like(x) * b
 
