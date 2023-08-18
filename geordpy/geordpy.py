@@ -16,7 +16,7 @@ def _filter(points, threshold):
         if last - first < 2:
             continue
 
-        dist = -great_circle.cos_distance_segment(
+        dist = 1.0 - great_circle.cos_distance_segment(
             points[first + 1 : last, 0],
             points[first + 1 : last, 1],
             lat1=points[first, 0],
@@ -71,6 +71,6 @@ def rdp_filter(points, threshold, radius=6_371_000):
         return np.empty(0, dtype=bool)
 
     points = np.deg2rad(np.array(points))
-    threshold = -np.cos(threshold / radius)  # negate to make it a distance
+    threshold = 1.0 - np.cos(threshold / radius)  # negate to make it a distance
 
     return _filter(points, threshold)
