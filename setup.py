@@ -14,7 +14,6 @@ import versioneer  # noqa: E402
 with open(here / "README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-
 setup(
     name="geordpy",
     description="A Python library for simplifying geodetic-coordinate polylines using the Ramer-Douglas-Peucker algorithm",
