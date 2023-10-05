@@ -3,6 +3,7 @@ import functools
 import numpy as np
 import pytest
 import scipy.optimize
+from numpy import pi
 from scipy.spatial.transform import Rotation as rotation
 
 from geordpy.great_circle import cos_distance, cos_distance_segment
@@ -68,8 +69,8 @@ def get_bound(a, b):
         a, b = b, a
 
     d = b - a
-    if d > np.pi:
-        return b, a + 2.0 * np.pi
+    if d > pi:
+        return b, a + 2 * pi
 
     return a, b
 
@@ -79,11 +80,11 @@ def get_bound(a, b):
 def test_random_points(batch_size, seed):
     rng = np.random.default_rng(seed)
 
-    az0 = rng.uniform(-np.pi, np.pi)
-    latN = np.pi / 2 - np.abs(az0)
-    lonN = rng.uniform(-np.pi, np.pi)
+    az0 = rng.uniform(-pi, pi)
+    latN = pi / 2 - np.abs(az0)
+    lonN = rng.uniform(-pi, pi)
 
-    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=2)
+    lon1, lon2 = rng.uniform(-pi, pi, size=2)
     lat1 = great_circle(lon1, latN=latN, lonN=lonN)
     lat2 = great_circle(lon2, latN=latN, lonN=lonN)
 
@@ -101,10 +102,10 @@ def test_random_points(batch_size, seed):
     )
 
     def _loss(x, *, batch_idx):
-        lat1 = great_circle(x, latN=latN, lonN=lonN)
-        lat2 = lat[batch_idx]
-        dlon = x - lon[batch_idx]
-        return -cos_distance(lat1=lat1, lat2=lat2, dlon=dlon)
+        latA = great_circle(x, latN=latN, lonN=lonN)
+        latB = lat[batch_idx]
+        lonAB = x - lon[batch_idx]
+        return -cos_distance(lat1=latA, lat2=latB, dlon=lonAB)
 
     bound = get_bound(lon1, lon2)
     for i in range(batch_size):
