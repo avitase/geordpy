@@ -102,10 +102,10 @@ def test_random_points(batch_size, seed):
     )
 
     def _loss(x, *, batch_idx):
-        lat1 = great_circle(x, latN=latN, lonN=lonN)
-        lat2 = lat[batch_idx]
-        dlon = x - lon[batch_idx]
-        return -cos_distance(lat1=lat1, lat2=lat2, dlon=dlon)
+        latA = great_circle(x, latN=latN, lonN=lonN)
+        latB = lat[batch_idx]
+        lonAB = x - lon[batch_idx]
+        return -cos_distance(lat1=latA, lat2=latB, dlon=lonAB)
 
     bound = get_bound(lon1, lon2)
     for i in range(batch_size):
