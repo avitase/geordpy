@@ -3,6 +3,7 @@ import functools
 import numpy as np
 import pytest
 import scipy.optimize
+from numpy import pi
 from scipy.spatial.transform import Rotation as rotation
 
 from geordpy.great_circle import cos_distance, cos_distance_segment
@@ -68,8 +69,8 @@ def get_bound(a, b):
         a, b = b, a
 
     d = b - a
-    if d > np.pi:
-        return b, a + 2.0 * np.pi
+    if d > pi:
+        return b, a + 2 * pi
 
     return a, b
 
@@ -79,11 +80,11 @@ def get_bound(a, b):
 def test_random_points(batch_size, seed):
     rng = np.random.default_rng(seed)
 
-    az0 = rng.uniform(-np.pi, np.pi)
-    latN = np.pi / 2 - np.abs(az0)
-    lonN = rng.uniform(-np.pi, np.pi)
+    az0 = rng.uniform(-pi, pi)
+    latN = pi / 2 - np.abs(az0)
+    lonN = rng.uniform(-pi, pi)
 
-    lon1, lon2 = rng.uniform(-np.pi, np.pi, size=2)
+    lon1, lon2 = rng.uniform(-pi, pi, size=2)
     lat1 = great_circle(lon1, latN=latN, lonN=lonN)
     lat2 = great_circle(lon2, latN=latN, lonN=lonN)
 
