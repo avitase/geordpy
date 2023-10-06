@@ -86,7 +86,7 @@ def rdp_filter(
         - The value of 'threshold' must be greater than zero.
         - The 'radius' value should be set appropriately to match the units of the threshold. For example, if the
           radius is set to 1, then the threshold corresponds to the arc length on the unit sphere.
-        - The values of 'threshold', 'n_samples', and 'n_iterations' must be greater than zero if provided.
+        - The values of 'n_samples', and 'n_iterations' must be greater than zero if provided.
         - The values of 'n_samples' and 'n_iterations' have no effect on the precision of the result if great-circles
           are used for interpolating segments of the polyline.
     """
