@@ -60,8 +60,22 @@ def cos_distance_lat(x, *, lat, lon, lat1, lat2, lon1, lon2):
     )
 
 
-def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2, n_iterations, n_samples):
-    if abs(lat1 - lat2) < abs(lon1 - lon2):
+def cos_distance_segment(
+    lat, lon, *, lat1, lon1, lat2, lon2, n_iterations, n_samples, eps=1e-10
+):
+    lat12 = abs(lat1 - lat2)
+    lon12 = abs(np.arctan2(np.sin(lon1 - lon2), np.cos(lon1 - lon2)))
+
+    if max(lat12, lon12) < eps:
+        return cos_distance(
+            sin_latA=np.sin(lat),
+            sin_latB=np.sin(lat2),
+            cos_latA=np.cos(lat),
+            cos_latB=np.cos(lat2),
+            cos_lonAB=np.cos(lon12),
+        )
+
+    if lat12 < lon12:
         f = cos_distance_lon
         bounds = np.full_like(lon, lon1), np.full_like(lon, lon2)
     else:

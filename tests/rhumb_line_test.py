@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import utils
 from numpy import pi
-from utils import SQRT2
+from utils import SQRT2, gd, igd
 
 from geordpy import great_circle, rhumb_line
 
@@ -68,14 +68,6 @@ def test_points(points, rotate):
     ).squeeze(-1)
 
     assert cos_dist == pytest.approx(exp)
-
-
-def gd(x):
-    return np.arctan(np.sinh(x))
-
-
-def igd(x):
-    return np.arcsinh(np.tan(x))
 
 
 @pytest.mark.parametrize("batch_size", [1, 5, 10])
