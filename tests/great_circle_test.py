@@ -3,17 +3,12 @@ import functools
 import numpy as np
 import pytest
 import scipy.optimize
+import utils
 from numpy import pi
 from scipy.spatial.transform import Rotation as rotation
+from utils import SQRT2, SQRT3
 
 from geordpy.great_circle import cos_distance, cos_distance_segment
-
-SQRT2 = np.sqrt(2.0)
-SQRT3 = np.sqrt(3.0)
-
-
-def latlon_from_vec(v):
-    return np.arcsin(v[..., 2]), np.arctan2(v[..., 1], v[..., 0])
 
 
 @pytest.mark.parametrize(
@@ -50,9 +45,9 @@ def test_points(points, rotate):
     rot = rotation.random(random_state=42).as_matrix() if rotate else np.eye(3)
 
     a, b, c, exp = points
-    lat1, lon1 = latlon_from_vec(rot @ a)
-    lat2, lon2 = latlon_from_vec(rot @ b)
-    lat3, lon3 = latlon_from_vec(rot @ c)
+    lat1, lon1 = utils.latlon_from_vec(rot @ a)
+    lat2, lon2 = utils.latlon_from_vec(rot @ b)
+    lat3, lon3 = utils.latlon_from_vec(rot @ c)
     cos_dist = cos_distance_segment(
         np.array([lat3]), np.array([lon3]), lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
     ).squeeze(-1)
@@ -95,7 +90,7 @@ def test_random_points(batch_size, seed):
         ],
         axis=0,
     )
-    lat, lon = latlon_from_vec(p)
+    lat, lon = utils.latlon_from_vec(p)
 
     cos_dist = cos_distance_segment(
         lat, lon, lat1=lat1, lon1=lon1, lat2=lat2, lon2=lon2
