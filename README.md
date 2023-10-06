@@ -6,7 +6,8 @@
 [![Unit tests](https://github.com/avitase/geordpy/actions/workflows/run_tests.yml/badge.svg)](https://codecov.io/gh/avitase/geordpy)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-GeoRDPy is a Python library that simplifies geodetic-coordinate polylines using the Ramer-Douglas-Peucker algorithm. It utilizes the distance to great circle segments as the distance metric to reduce the number of points in a polyline while maintaining accuracy.
+GeoRDPy is a Python library that simplifies geodetic-coordinate polylines using the Ramer-Douglas-Peucker algorithm. By default, it utilizes the distance to great-circle segments as the distance metric to reduce the number of points in a polyline while maintaining accuracy.
+Optionally, the segments can be interpolated with rhumb lines instead of great-circle. For both options, the great-circle distance is used internally for finding the smallest distance between the interpolated segment and geodetic-coordinate points.
 
 ## Installation
 GeoRDPy releases are available as wheel packages for macOS, Windows and Linux on [PyPI](https://pypi.org/project/geordpy/).
