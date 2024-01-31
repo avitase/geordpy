@@ -35,6 +35,7 @@ jobs:
         run: |
           set -o pipefail
           pytest \
+            --junitxml=pytest.xml \
             --cov-report=xml \
             --cov-report=term-missing \
             --cov=geordpy \
@@ -45,7 +46,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: ./pytest-coverage.txt
+          files: ./coverage.xml
 
       - name: Add Coverage to pull request
         uses: MishaKav/pytest-coverage-comment@v1.1.48
