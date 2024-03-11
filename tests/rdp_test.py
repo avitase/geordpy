@@ -66,6 +66,24 @@ def test_great_circle():
     assert all(mask == [True, False, True, True, True, True, False, True])
 
 
+def test_degenerated_great_circle():
+    points = [
+        (0.0, 10.0),  # point 0
+        (0.0, 0.0),  # point 1
+        (0.0, 0.0),  # point 2
+        (0.0, 10.0),  # point 3
+    ]
+
+    radius = 1000
+    _filter = functools.partial(rdp_filter, radius=radius)
+
+    mask = _filter(points, threshold=1)
+    assert all(mask == [True, True, False, True])
+
+    mask = _filter(points, threshold=10 * radius)
+    assert all(mask == [True, False, False, True])
+
+
 def test_rhumb_line():
     def _gd(x):
         return np.rad2deg(utils.gd(np.deg2rad(x)))
