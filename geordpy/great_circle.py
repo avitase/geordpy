@@ -35,7 +35,11 @@ def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2, eps=1e-5):
 
     n = np.cross(a, b)
     cos_gamma = np.clip(np.dot(a, b), a_min=-1.0, a_max=1.0)
-    n /= max(np.sqrt((1.0 - cos_gamma) * (1.0 + cos_gamma)), np.nextafter(0.0, 1.0))
+
+    # if |cos(gamma)| = 1, then |n| = 0. However, in case |n| is slightly larger due
+    # to numeric issues, division by 1e-100 is a decent approximation. Even smaller
+    # values for the denominator should be avoided as this can trigger overflows.
+    n /= max(np.sqrt((1.0 - cos_gamma) * (1.0 + cos_gamma)), 1e-100)
 
     s = x @ n
 
