@@ -34,7 +34,7 @@ def cos_distance_segment(lat, lon, *, lat1, lon1, lat2, lon2, eps=1e-5):
     )
 
     n = np.cross(a, b)
-    cos_gamma = np.dot(a, b)
+    cos_gamma = np.clip(np.dot(a, b), a_min=-1.0, a_max=1.0)
     n /= max(np.sqrt((1.0 - cos_gamma) * (1.0 + cos_gamma)), np.nextafter(0.0, 1.0))
 
     s = x @ n
