@@ -30,19 +30,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v5
 
       - name: Download HTML doc artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: geordpy-docs-html
           path: docs_build
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs_build
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
